@@ -30,6 +30,14 @@ export default function profileEdit() {
   const windowWidth = Dimensions.get("window").width;
   const router = useRouter();
 
+  const [nameErr, setNameErr] = React.useState("");
+  const [surnameErr, setSurnameErr] = React.useState("");
+  const [emailerr, setEmailErr] = React.useState("");
+
+  var nameValid = false;
+  var surnameValid = false;
+  var emailValid = false;
+
   async function fetchInfo() {
     await getUid().then(() => {
       const docRef = doc(firestore, "users", uid);
@@ -65,6 +73,48 @@ export default function profileEdit() {
       }
     });
     router.push("(tabs)/profile");
+  }
+
+  async function validation() {
+    if (name.length == 0) {
+      nameValid = false;
+      setNameErr("Reikalingas vardas");
+    } else {
+      nameValid = true;
+      setNameErr("");
+    }
+
+    if (surname.length == 0) {
+      surnameValid = false;
+      setSurnameErr("Reikalinga pavardė");
+    } else {
+      surnameValid = true;
+      setSurnameErr("");
+    }
+
+    var regexp = new RegExp("^.+@.+..+"),
+      test = regexp.test(email);
+    if (email.length == 0) {
+      emailValid = false;
+      setEmailErr("Reikalingas el.paštas");
+    } else if (test == false) {
+      emailValid = false;
+      setEmailErr("Neteisingas el.paštas");
+    } else {
+      await fetchSignInMethodsForEmail(auth, email).then((answer) => {
+        if (answer.length == 0) {
+          emailValid = true;
+          setEmailErr("");
+        } else {
+          emailValid = false;
+          setEmailErr("El. paštas jau užimtas");
+        }
+      });
+    }
+
+    if (nameValid == true && surnameValid == true && emailValid == true) {
+      handleSubmit();
+    }
   }
 
   async function getUid() {
@@ -115,7 +165,7 @@ export default function profileEdit() {
         mode="contained-tonal"
         style={styles.button}
         onPress={() => {
-          handleSubmit();
+          validation();
         }}
       >
         išsaugoti

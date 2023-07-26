@@ -14,13 +14,25 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Int32 } from "react-native/Libraries/Types/CodegenTypes";
 import { getAuth } from "firebase/auth";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { firestore } from "../firebaseConfig";
 
 export default function CategoryAdd() {
   const windowWidth = Dimensions.get("window").width;
   const router = useRouter();
   const [category, setCategory] = useState("");
+
+  var nameValid = true;
+  const [categoryErrMsg, setCategoryErrMsg] = useState("");
 
   function submit() {
     const auth = getAuth();
@@ -36,9 +48,48 @@ export default function CategoryAdd() {
     }
   }
 
+  async function validation() {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      const uid = user?.uid;
+      const q = query(
+        collection(firestore, "categories"),
+        where("userId", "==", uid)
+      );
+      var items: string[] = [];
+      const querySnapshot = await getDocs(q);
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        nameValid = true;
+        snapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.name == category) {
+            console.log(userData.name, category);
+            nameValid = false;
+            setCategoryErrMsg("Tokia kategorija jau egzistuoja");
+          }
+        });
+        if (nameValid == true) {
+          setCategoryErrMsg("");
+          submit();
+        }
+      });
+    }
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.top}></View>
+      <Text
+        style={[
+          {
+            fontSize: 17,
+            color: "red",
+          },
+        ]}
+      >
+        {categoryErrMsg}
+      </Text>
       <TextInput
         mode="outlined"
         label="Vardas"
@@ -51,7 +102,7 @@ export default function CategoryAdd() {
         mode="contained-tonal"
         style={styles.button}
         onPress={() => {
-          submit();
+          validation();
         }}
       >
         Pridėti

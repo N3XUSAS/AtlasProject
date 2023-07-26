@@ -56,6 +56,12 @@ export default function bookEdit() {
   ]);
   const [element, setElement] = useState("");
 
+  var valueValid = false;
+  var value2Valid = false;
+
+  const [valueErrMsg, setValueErrMsg] = useState("");
+  const [value2ErrMsg, setValue2ErrMsg] = useState("");
+
   const windowWidth = Dimensions.get("window").width;
   const router = useRouter();
 
@@ -132,6 +138,26 @@ export default function bookEdit() {
     }
   }
 
+  function validation() {
+    if (statusValue.length == 0) {
+      valueValid = false;
+      setValueErrMsg("Nepasirinkta jokia kategorija");
+    } else {
+      valueValid = true;
+      setValueErrMsg("");
+    }
+    if (statusValue.length == 0) {
+      value2Valid = false;
+      setValue2ErrMsg("Nepasirinktas joks statusas");
+    } else {
+      value2Valid = true;
+      setValue2ErrMsg("");
+    }
+    if (valueValid == true && value2Valid == true) {
+      submit();
+    }
+  }
+
   function submit() {
     const data = {
       rating: rating,
@@ -175,11 +201,21 @@ export default function bookEdit() {
     <View style={styles.container}>
       <View style={styles.top}></View>
       <Text
+        style={[
+          {
+            fontSize: 17,
+            color: "red",
+          },
+        ]}
+      >
+        {valueErrMsg}
+      </Text>
+      <Text
         style={{ color: "black", fontSize: 17, marginBottom: 10, zIndex: -1 }}
       >
         Knygos kategorija:
       </Text>
-      <View style={{ zIndex: 2 }}>
+      <View style={{ zIndex: 2, backgroundColor: "#FEFCF3" }}>
         <DropDownPicker
           zIndex={3000}
           zIndexInverse={1000}
@@ -190,15 +226,34 @@ export default function bookEdit() {
           setValue={setCategoryValue}
           setItems={setCategoryData}
           dropDownDirection="BOTTOM"
+          placeholder="Pasirinkite kategorija"
+          onOpen={() => setOpenSecond(false)}
+          style={{ backgroundColor: "#F5EBE0" }}
+          containerStyle={{
+            width: "80%",
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: "#F5EBE0",
+          }}
         />
       </View>
       <View style={styles.separator}></View>
+      <Text
+        style={[
+          {
+            fontSize: 17,
+            color: "red",
+          },
+        ]}
+      >
+        {value2ErrMsg}
+      </Text>
       <Text
         style={{ color: "black", fontSize: 17, marginBottom: 10, zIndex: -1 }}
       >
         Knygos statusas:
       </Text>
-      <View style={{ zIndex: 1 }}>
+      <View style={{ zIndex: 1, backgroundColor: "#FEFCF3" }}>
         <DropDownPicker
           zIndex={1000}
           zIndexInverse={3000}
@@ -209,6 +264,15 @@ export default function bookEdit() {
           setValue={setStatusValue}
           setItems={setStatusData}
           dropDownDirection="BOTTOM"
+          placeholder="Pasirinkite kategorija"
+          onOpen={() => setOpen(false)}
+          style={styles.dropDown}
+          containerStyle={{
+            width: "80%",
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: "#F5EBE0",
+          }}
         />
       </View>
       <View style={styles.separator}></View>
@@ -274,7 +338,7 @@ export default function bookEdit() {
         mode="contained-tonal"
         style={[styles.button, { zIndex: -1 }]}
         onPress={() => {
-          submit();
+          validation();
         }}
       >
         išsaugoti
@@ -343,5 +407,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5EBE0",
     //color: "black",
     marginTop: 25,
+  },
+  dropDown: {
+    backgroundColor: "#F5EBE0",
   },
 });

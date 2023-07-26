@@ -34,7 +34,7 @@ export default function BooksAdd() {
   const [id, setId] = useState("");
   const [title, setTitle] = useState("");
   const [pages, setPages] = useState(-1);
-  const [authors, setAuthors] = useState([""]);
+  const [authors, setAuthors] = useState("");
 
   const [openSecond, setOpenSecond] = useState(false);
   const [statusValue, setStatusValue] = useState("");
@@ -49,6 +49,12 @@ export default function BooksAdd() {
   const [value, setValue] = useState("");
   const [data, setData] = useState([{ value: "-", label: "-" }]);
   const [element, setElement] = useState("");
+
+  var valueValid = false;
+  var value2Valid = false;
+
+  const [valueErrMsg, setValueErrMsg] = useState("");
+  const [value2ErrMsg, setValue2ErrMsg] = useState("");
 
   async function fetchCategories() {
     const auth = getAuth();
@@ -81,6 +87,26 @@ export default function BooksAdd() {
     }
   }, [element]);
 
+  function validation() {
+    if (value.length == 0) {
+      valueValid = false;
+      setValueErrMsg("Nepasirinkta jokia kategorija");
+    } else {
+      valueValid = true;
+      setValueErrMsg("");
+    }
+    if (statusValue.length == 0) {
+      value2Valid = false;
+      setValue2ErrMsg("Nepasirinktas joks statusas");
+    } else {
+      value2Valid = true;
+      setValue2ErrMsg("");
+    }
+    if (valueValid == true && value2Valid == true) {
+      submit();
+    }
+  }
+
   function submit() {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -102,7 +128,19 @@ export default function BooksAdd() {
   }
 
   function add(id: string, name: string, authors: [string], pages: Int32) {
-    setAuthors(authors);
+    //setAuthors(authors);
+    if (authors.length > 1) {
+      var line: string = "";
+      authors.forEach((element) => {
+        line = line + element + ", ";
+      });
+      line = line.substring(0, line.length - 2);
+      setAuthors(line);
+    } else {
+      var line: string = "";
+      line = authors[0];
+      setAuthors(line);
+    }
     setId(id);
     setTitle(name);
     if (pages != undefined) setPages(pages);
@@ -114,8 +152,6 @@ export default function BooksAdd() {
       <View style={styles.top}></View>
       <GoogleBookSearch
         placeholder="Ieškoti"
-        // key removed for security reasons
-        apikey={""}
         printType="books"
         langRestrict="lt"
         onResultPress={(book: any) =>
@@ -123,7 +159,22 @@ export default function BooksAdd() {
         }
       />
       <View style={styles.separator}></View>
-      <View style={{ zIndex: 2 }}>
+      <Text
+        style={[
+          {
+            fontSize: 17,
+            color: "red",
+          },
+        ]}
+      >
+        {valueErrMsg}
+      </Text>
+      <Text
+        style={{ color: "black", fontSize: 17, marginBottom: 10, zIndex: -1 }}
+      >
+        Knygos kategorija:
+      </Text>
+      <View style={{ zIndex: 2, backgroundColor: "#FEFCF3" }}>
         <DropDownPicker
           zIndex={1000}
           zIndexInverse={3000}
@@ -135,10 +186,32 @@ export default function BooksAdd() {
           setItems={setData}
           placeholder="Pasirinkite kategorija"
           onOpen={() => setOpenSecond(false)}
+          style={{ backgroundColor: "#F5EBE0" }}
+          containerStyle={{
+            width: "80%",
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: "#F5EBE0",
+          }}
         />
       </View>
       <View style={styles.separator}></View>
-      <View style={{ zIndex: 1 }}>
+      <Text
+        style={[
+          {
+            fontSize: 17,
+            color: "red",
+          },
+        ]}
+      >
+        {value2ErrMsg}
+      </Text>
+      <Text
+        style={{ color: "black", fontSize: 17, marginBottom: 10, zIndex: -1 }}
+      >
+        Knygos statusas:
+      </Text>
+      <View style={{ zIndex: 1, backgroundColor: "#FEFCF3" }}>
         <DropDownPicker
           zIndex={1000}
           zIndexInverse={3000}
@@ -150,13 +223,20 @@ export default function BooksAdd() {
           setItems={setStatusData}
           placeholder="Pasirinkite kategorija"
           onOpen={() => setOpen(false)}
+          style={{ backgroundColor: "#F5EBE0" }}
+          containerStyle={{
+            width: "80%",
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: "#F5EBE0",
+          }}
         />
       </View>
       <Button
         mode="contained-tonal"
         style={styles.button}
         onPress={() => {
-          submit();
+          validation();
         }}
       >
         Pridėti
@@ -218,5 +298,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5EBE0",
 
     marginTop: 25,
+  },
+  search: {
+    backgroundColor: "#F5EBE0",
   },
 });
